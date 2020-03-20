@@ -11,8 +11,9 @@ let state = {
   failCount: 0
 }
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+app.get('/viewState', (req, res) => {
+  // res.sendFile(path.join(__dirname, 'build', 'index.html'));
+  res.send(state);
 });
 
 app.get('/getData', (req, res) => {
