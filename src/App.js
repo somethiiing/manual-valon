@@ -1,26 +1,83 @@
 import React from 'react';
-import logo from './logo.svg';
+import axios from 'axios';
 import './App.css';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      successCount: 0,
+      failCount: 0
+    }
+
+    this.fail = this.fail.bind(this);
+    this.success = this.success.bind(this);
+    this.reset = this.reset.bind(this);
+  }
+
+  componentDidMount() {
+    axios.get('/getData')
+      .then( response => {
+        this.setState(response.data.state);
+      })
+  }
+
+  success(e) {
+    e.preventDefault();
+    axios.get('/vote/success')
+      .then(response => {
+        alert('vote registered, refresh page now!')
+      })
+      .catch(() => {
+        alert('failed, try again once')
+      })
+  }
+
+  fail(e) {
+    e.preventDefault();
+    axios.get('/vote/fail')
+    .then(response => {
+      alert('vote registered, refresh page now!')
+    })
+    .catch(() => {
+      alert('failed, try again once')
+    })
+  }
+
+  reset(e) {
+    e.preventDefault();
+    axios.get('/reset')
+      .then(response => {
+        alert('successfully reset, please refresh page')
+      })
+  }
+
+
+  render() {
+    return (
+      <div>
+        <div>
+          <div>
+            {`Success Count: ${this.state.successCount}`}
+          </div>
+          <div>
+            {`Fail Count: ${this.state.failCount}`}
+          </div>
+        </div>
+
+
+        <div>
+          <button onClick={this.success}>SUCCESS</button>
+          <button onClick={this.fail}>FAIL</button>
+        </div>
+
+
+      <button onClick={this.reset}>RESET</button>
+
+      </div>
+    );
+  }
 }
 
 export default App;
