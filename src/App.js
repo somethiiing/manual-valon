@@ -8,24 +8,22 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      page: 'BOARD'
+      showButtons: true,
+      page: ''
     }
 
     this.changePage = this.changePage.bind(this);
   }
 
-  changePage() {
-    if (this.state.page === 'BOARD') {
-      this.setState({page: 'ADMIN'});
-    } else {
-      this.setState({page: 'BOARD'});
-    }
+  changePage(page) {
+    this.setState({showButtons: false, page});
   }
 
   render() {
     return (
       <div style={{height: '100%'}}>
-        <button onClick={this.changePage}>change</button>
+        {this.state.showButtons && <button onClick={e => this.changePage('BOARD')}>PLAYER</button>}
+        {this.state.showButtons && <button onClick={e => this.changePage('ADMIN')}>ADMIN</button>}
         {this.state.page === 'BOARD' && <Board />}
         {this.state.page === 'ADMIN' && <Admin />}
       </div>
