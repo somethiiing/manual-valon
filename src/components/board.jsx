@@ -4,6 +4,18 @@ import io from 'socket.io-client';
 
 let socket;
 
+let state = {
+  missionVoteCount: {
+    SUCCESS: 0,
+    FAIL: 0
+  },
+  doubleFail: false,
+  voteTrack: 1,
+  missions: [
+    {missionSize: 3, missionResult: 'NOT_WENT'} // result === NOT_WENT, SUCCESS, FAIL
+  ]
+}
+
 export default class Board extends React.Component {
   constructor(props) {
     super(props);
@@ -29,11 +41,18 @@ export default class Board extends React.Component {
     console.log('got it!', data)
   }
 
+  submitMissionVote(vote) {
+    // vote needs to be either 'SUCCESS' or 'FAIL'
+    axios.post('/submitMissionVote', {vote});
+  }
+
   componentWillUnmount() {
     socket.disconnect();
   }
 
   render() {
+    // mission numbers + doublefail, mission statuses, player order,
+    // mission vote buttons, vote tracker, mission vote results,
     return (
       <div>
         board

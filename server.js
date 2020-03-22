@@ -14,11 +14,10 @@ app
   .use(express.static(path.join(__dirname, 'build')));
 
 let state = {
-  voteCount: {
+  missionVoteCount: {
     SUCCESS: 0,
     FAIL: 0
   },
-  nominationVote: [],
   doubleFail: false,
   voteTrack: 1,
   missions: []
@@ -34,12 +33,12 @@ app.get('/getData', (req, res) => {
 
 app.post('/submitMissionVote', (req, res) => {
   let { vote } = req.body;
-  state.voteCount[vote] = state.voteCount[vote] + 1;
+  state.missionVoteCount[vote] = state.missionVoteCount[vote] + 1;
   res.send({status: 'VOTE_REGISTERED'});
 });
 
 app.post('/submitMissionVoteReset', (req, res) => {
-  state.voteCount = {
+  state.missionVoteCount = {
     SUCCESS: 0,
     FAIL: 0
   }

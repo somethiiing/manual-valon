@@ -62,7 +62,7 @@ class adminPage extends React.Component {
     super(props);
 
     this.state = {
-      page: 'admin'
+      page: 'login'
     };
 
     this.login = this.login.bind(this);
