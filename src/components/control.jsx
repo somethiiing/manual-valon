@@ -6,18 +6,23 @@ export default class ControlPanel extends React.Component {
     super(props);
 
     this.state = {
+      players: '',
       missionSize: '',
       doubleFail: false,
       voteTrack: 1,
       selectedMission: 1,
       missionResult: 'SUCCESS',
-      returnedState: {}
+      showDisplay: true,
+      returnedState: {},
+      missionVote: {}
     }
 
     this.onInputChange = this.onInputChange.bind(this);
     this.submitBoardChange = this.submitBoardChange.bind(this);
     this.submitMissionVote = this.submitMissionVote.bind(this);
+    this.revealMissionVotes = this.revealMissionVotes.bind(this);
     this.submitMissionVoteReset = this.submitMissionVoteReset.bind(this);
+    this.toggleDisplay = this.toggleDisplay.bind(this);
   }
 
   onInputChange(e, field, numOrBool) {
@@ -35,6 +40,10 @@ export default class ControlPanel extends React.Component {
   submitBoardChange(e, form) {
     e.preventDefault();
     let data = {};
+    if(form === 'setPlayersList') {
+      data.changeType = 'SET_PLAYERS_LIST';
+      data.playersList = this.state.players.split(',');
+    }
     if(form === 'setMissionSize') {
       data.changeType = 'SET_MISSION_SIZE';
       data.missionSize = this.state.missionSize.split(',');
@@ -56,18 +65,40 @@ export default class ControlPanel extends React.Component {
 
   submitMissionVote(vote) {
     axios.post('/submitMissionVote', {vote})
-    .then (res => this.setState({returnedState: res.data}));
+    .then(res => this.setState({missionVote: res.data}));
+  }
+
+  revealMissionVotes() {
+    axios.post('/revealMissionVotes');
   }
 
   submitMissionVoteReset() {
     axios.post('/submitMissionVoteReset')
-    .then( res => this.setState({returnedState: res.data}))
+    .then( res => this.setState({returnedState: res.data.state, missionVote: res.data.missionVoteCount}))
+  }
+
+  toggleDisplay() {
+    this.setState({showDisplay: !this.state.showDisplay});
   }
 
   render() {
     return (
       <div style={{display:'flex', height: '100%'}}>
         <div style={{padding: '25px', width: '50%'}}>
+
+          <form
+            style={{display: 'flex', flexDirection: 'column'}}
+            onSubmit={e => this.submitBoardChange(e, 'setPlayersList')}
+          >
+            <h4>Submit Players</h4>
+            <input
+              placeholder='alice,bob,charlie,david,elliot'
+              value={this.state.players}
+              onChange={ (e) => this.onInputChange(e, 'players') }
+            ></input>
+            <button>SUBMIT PLAYERS LIST</button>
+          </form>
+
           <form style={{display: 'flex', flexDirection: 'column'}}
             onSubmit={e => this.submitBoardChange(e, 'setMissionSize')}
           >
@@ -110,7 +141,8 @@ export default class ControlPanel extends React.Component {
             <h4>Mission Vote:</h4>
             <button onClick={ () => this.submitMissionVote('SUCCESS')}>VOTE SUCCESS</button>
             <button onClick={ () => this.submitMissionVote('FAIL')}>VOTE FAIL</button>
-            <button  onClick={this.submitMissionVoteReset}>RESET MISSION VOTE</button>
+            <button onClick={this.revealMissionVotes}>REVEAL MISSION VOTE</button>
+            <button onClick={this.submitMissionVoteReset}>RESET MISSION VOTE</button>
           </form>
 
           <form style={{display: 'flex', flexDirection: 'column'}}
@@ -139,7 +171,8 @@ export default class ControlPanel extends React.Component {
         </div>
 
         <div style={{width: '50%', borderLeft: '1px solid black', paddingLeft: '25px'}}>
-          <pre>{JSON.stringify(this.state, null, 4)}</pre>
+          <button onClick={this.toggleDisplay}>Toggle Display</button>
+          { this.state.showDisplay && <pre>{JSON.stringify(this.state, null, 4)}</pre>}
         </div>
 
       </div>
