@@ -68,11 +68,8 @@ const useStyles = makeStyles(theme => ({
       borderBottom: 'none'
     }
   },
-  playerListIcon: {
-    width: '30%'
-  },
   playerListName: {
-    width: '70%',
+    width: '100%',
     display: 'flex',
     justifyContent: 'center'
   },
@@ -92,21 +89,34 @@ const useStyles = makeStyles(theme => ({
     width: '500px',
     display: 'flex',
     justifyContent: 'space-between'
+  },
+  voteTrackerContainer: {
+    width: '65%',
+    height: '20%'
+  },
+  voteTracker: {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'space-around'
+  },
+  voteTrackerCircle: {
+    width: '40px',
+    height: '40px',
+    backgroundColor: 'lightgray',
+    borderRadius: '50%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    '&:last-child': {
+      backgroundColor: '#FF4949'
+    }
+  },
+  selectedCircle: {
+    border: 'solid 4px black'
   }
 }));
 
 //TODO 'configuring' page whie waiting for missionSize to be set
-// let testState = {
-//   missionVoteCount: {
-//     SUCCESS: 0,
-//     FAIL: 0
-//   },
-//   doubleFail: false,
-//   voteTrack: 1,
-//   missions: [
-//     {missionSize: 3, missionResult: 'NOT_WENT'} // result === NOT_WENT, SUCCESS, FAIL
-//   ]
-// }
 
 let testState = {
     "missionSize": "3,4,4,4,5",
@@ -209,7 +219,6 @@ function GameBoard (props) {
   const classes = useStyles();
   const { missionSizes = [], currentVoteTrack = '1', selectedMission = '1', currentMissionResult = 'NOT_WENT', returnedState = {} } = props;
   const { missionVoteCount = {}, playersList = [], doubleFail = false, voteTrack = 1, missions = [] } = returnedState;
-console.log(returnedState)
 
   return (
     <div className={classes.gameboard}>
@@ -229,6 +238,12 @@ console.log(returnedState)
           <div className={classes.playerListHeader}>King Order: </div>
           {playersList.map( (player) => <PlayerListItem playerName={player} />)}
         </div>
+      </div>
+      <div className={classes.voteTrackerContainer}>
+        <div className={classes.voteTrackerHeader}>Mission Proposals: </div>
+        <VoteTracker
+          voteTrack={voteTrack}
+        />
       </div>
     </div>
   );
@@ -275,8 +290,22 @@ function PlayerListItem (props) {
 
   return (
     <div className={classes.playerListItem}>
-      <div className={classes.playerListIcon}>[  X  ]</div>
       <div className={classes.playerListName}>{props.playerName}</div>
     </div>
   )
 };
+
+
+function VoteTracker (props) {
+  const classes = useStyles();
+  const circles = [];
+  for (let i=1; i<=5; i++) {
+    circles.push(<div className={`${classes.voteTrackerCircle} ${props.voteTrack === i && classes.selectedCircle}`}>{i}</div>);
+  }
+  return (
+    <div className={classes.voteTracker}>
+      {circles}
+
+    </div>
+  )
+}
