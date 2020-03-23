@@ -90,9 +90,14 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     justifyContent: 'space-between'
   },
+  bottomSection: {
+    width: '100%',
+    height: '20%',
+    display: 'flex'
+  },
   voteTrackerContainer: {
     width: '65%',
-    height: '20%'
+    height: '100%'
   },
   voteTracker: {
     width: '100%',
@@ -113,6 +118,33 @@ const useStyles = makeStyles(theme => ({
   },
   selectedCircle: {
     border: 'solid 4px black'
+  },
+  voteContainer: {
+    width: '35%',
+    height: '100%'
+  },
+  voteButtonContainer: {
+    width: '100%',
+    height: '80%',
+    display: 'flex'
+  },
+  voteButtonSuccess: {
+    width: '50%',
+    height: '100%',
+    backgroundColor: '#006FC2',
+    color: 'white',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  voteButtonFail: {
+    width: '50%',
+    height: '100%',
+    backgroundColor: '#FF4949',
+    color: 'white',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center'
   }
 }));
 
@@ -209,6 +241,7 @@ export default class Board extends React.Component {
         selectedMission={this.state.boardData.selectedMission}
         currentMissionResult={this.state.boardData.missionResult}
         returnedState={this.state.boardData.returnedState}
+        submitMissionVote={this.submitMissionVote}
       />
     );
   }
@@ -217,7 +250,8 @@ export default class Board extends React.Component {
 
 function GameBoard (props) {
   const classes = useStyles();
-  const { missionSizes = [], currentVoteTrack = '1', selectedMission = '1', currentMissionResult = 'NOT_WENT', returnedState = {} } = props;
+  const { missionSizes = [], currentVoteTrack = '1', selectedMission = '1',
+    currentMissionResult = 'NOT_WENT', returnedState = {}, submitMissionVote } = props;
   const { missionVoteCount = {}, playersList = [], doubleFail = false, voteTrack = 1, missions = [] } = returnedState;
 
   return (
@@ -239,11 +273,15 @@ function GameBoard (props) {
           {playersList.map( (player) => <PlayerListItem playerName={player} />)}
         </div>
       </div>
-      <div className={classes.voteTrackerContainer}>
-        <div className={classes.voteTrackerHeader}>Mission Proposals: </div>
-        <VoteTracker
-          voteTrack={voteTrack}
-        />
+      <div className={classes.bottomSection}>
+        <div className={classes.voteTrackerContainer}>
+          <div className={classes.voteTrackerHeader}>Mission Proposals: </div>
+          <VoteTracker voteTrack={voteTrack} />
+        </div>
+        <div className={classes.voteContainer}>
+          <div className={classes.voteHeader}>Mission Result Vote: </div>
+          <MissionVote submitMissionVote={submitMissionVote}/>
+        </div>
       </div>
     </div>
   );
@@ -306,6 +344,21 @@ function VoteTracker (props) {
     <div className={classes.voteTracker}>
       {circles}
 
+    </div>
+  )
+}
+
+function MissionVote (props) {
+  const classes = useStyles();
+
+  return (
+    <div className={classes.voteButtonContainer}>
+      <div className={classes.voteButtonSuccess} onClick={() => props.submitMissionVote('SUCCESS')}>
+        Success
+      </div>
+      <div className={classes.voteButtonFail} onClick={() => props.submitMissionVote('FAIL')}>
+        Fail
+      </div>
     </div>
   )
 }
