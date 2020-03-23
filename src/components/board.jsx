@@ -32,6 +32,11 @@ const useStyles = makeStyles(theme => ({
     flexDirection: 'column',
     justifyContent: 'space-between'
   },
+  questInfo_circle: {
+    width: '65%',
+    display: 'flex',
+    justifyContent: 'space-around'
+  },
   questInfoItem: {
     display: 'flex',
     height: '20%',
@@ -39,6 +44,13 @@ const useStyles = makeStyles(theme => ({
     '&:last-child': {
       borderBottom: 'none'
     }
+  },
+  questInfoItem_circle: {
+    width: '20%',
+    padding: '20px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center'
   },
   questInfoItemData: {
     width: '35%',
@@ -55,6 +67,16 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'center',
     fontSize: '28px',
     fontWeight: '700'
+  },
+  questInfoItemStatus_circle: {
+    height: '70px',
+    width: '70px',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontSize: '28px',
+    fontWeight: '700',
+    borderRadius: '50%'
   },
   questResultDisplay: {
     fontSize: '16px',
@@ -177,7 +199,7 @@ let testBoardData = {
         "david",
         "bob"
     ],
-    "doubleFail": false,
+    "doubleFail": true,
     "voteTrack": 1,
     "missions": [
         {
@@ -193,7 +215,7 @@ let testBoardData = {
             "missionResult": "NOT_WENT"
         },
         {
-            "missionSize": "4",
+            "missionSize": "5",
             "missionResult": "NOT_WENT"
         },
         {
@@ -276,9 +298,9 @@ function GameBoard (props) {
   return (
     <div className={classes.gameboard}>
       <div className={classes.gameInfo}>
-        <div className={classes.questInfo}>
+        <div className={classes.questInfo_circle}>
           {missions.map( (mission, ind) =>
-            <QuestInfoItem
+            <QuestInfoItemCircles
               misNum={ind}
               misSize={mission.missionSize}
               doubleFail={doubleFail}
@@ -342,6 +364,39 @@ function QuestInfoItem (props) {
           <div>{ missionVotes.FAIL > 0 && `Fail Votes: ${missionVotes.FAIL}` }</div>
         </div>
       </div>
+    </div>
+  );
+}
+
+
+function QuestInfoItemCircles (props) {
+  let backgroundColor = 'lightgray';
+  let fontColor = 'black'
+
+  const classes = useStyles();
+  const { misNum, misSize, doubleFail, missionData = {}, missionVotes } = props;
+  const { missionResult = 'NOT_WENT' } = missionData;
+
+  if (missionResult !== 'NOT_WENT') {
+    backgroundColor = missionResult === 'FAIL' ? '#FF4949' : '#006FC2'
+    fontColor = 'white';
+  }
+
+  //TODO put somewhere else
+  //
+  // <div className={classes.questResultDisplay}>
+  //   <div>{ missionVotes.SUCCESS > 0 && `Success Votes: ${missionVotes.SUCCESS}` }</div>
+  //   <div>{ missionVotes.FAIL > 0 && `Fail Votes: ${missionVotes.FAIL}` }</div>
+  // </div>
+  return (
+    <div className={classes.questInfoItem_circle}>
+      <div
+        className={classes.questInfoItemStatus_circle}
+        style={{ backgroundColor, color: fontColor }}
+      >
+        { misSize }
+      </div>
+      {(doubleFail && misNum === 3) && <div style={{color: 'red', fontSize: '14px', textAlign: 'center'}}>TWO FAILS REQUIRED</div>}
     </div>
   );
 }
