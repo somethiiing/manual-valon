@@ -167,8 +167,8 @@ const useStyles = makeStyles(theme => ({
 
 let testBoardData = {
     "missionVoteCount": {
-        "SUCCESS": 0,
-        "FAIL": 0
+        "SUCCESS": 3,
+        "FAIL": 1
     },
     "playersList": [
         "elliot",
@@ -270,7 +270,7 @@ function GameBoard (props) {
   const { returnedState = {}, submitMissionVote } = props;
   const { missionVoteCount = {}, playersList = [], doubleFail = false, voteTrack = 1, missions = [] } = returnedState;
 
-  const mostRecentCompletedMission = 4 - [...missions].reverse().findIndex(mission => mission.missionResult !== 'NOT_WENT');
+  const nextMission = missions.findIndex(mission => mission.missionResult === 'NOT_WENT');
   const missionResultReady = missionVoteCount.SUCCESS > 0 || missionVoteCount.FAIL > 0;
 
   return (
@@ -283,7 +283,7 @@ function GameBoard (props) {
               misSize={mission.missionSize}
               doubleFail={doubleFail}
               missionData={mission}
-              missionVotes={missionResultReady && ind === mostRecentCompletedMission ? missionVoteCount : {}}
+              missionVotes={missionResultReady && ind === nextMission ? missionVoteCount : {}}
             />
           )}
         </div>
