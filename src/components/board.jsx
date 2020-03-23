@@ -6,6 +6,14 @@ import { makeStyles } from '@material-ui/core/styles';
 let socket;
 
 const useStyles = makeStyles(theme => ({
+  gameNotReady: {
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontSize: '28px'
+  },
   gameboard: {
     width: '100%',
     height: '100%',
@@ -157,12 +165,10 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-//TODO 'configuring' page whie waiting for missionSize to be set
-
 let testBoardData = {
     "missionVoteCount": {
-        "SUCCESS": 3,
-        "FAIL": 1
+        "SUCCESS": 0,
+        "FAIL": 0
     },
     "playersList": [
         "elliot",
@@ -171,8 +177,8 @@ let testBoardData = {
         "david",
         "bob"
     ],
-    "doubleFail": true,
-    "voteTrack": 3,
+    "doubleFail": false,
+    "voteTrack": 1,
     "missions": [
         {
             "missionSize": "3",
@@ -234,18 +240,31 @@ export default class Board extends React.Component {
 
 
   render() {
-    // mission numbers + doublefail, mission statuses, player order,
-    // mission vote buttons, vote tracker, mission vote results,
     console.log('state', this.state)
+    const gameStarted = this.state.boardData.missions.length !== 0;
+
     return (
-      <GameBoard
-        returnedState={this.state.boardData}
-        submitMissionVote={this.submitMissionVote}
-      />
+      <div style={{height: '100%', width: '100%'}}>
+        { gameStarted ?
+          <GameBoard
+            returnedState={this.state.boardData}
+            submitMissionVote={this.submitMissionVote}
+          /> :
+          <WaitForAdmin />
+        }
+      </div>
     );
   }
 }
 
+function WaitForAdmin (props) {
+  const classes = useStyles();
+  return (
+    <div className={classes.gameNotReady}>
+      Please wait. The admin is currently configuring your room.
+    </div>
+  );
+}
 
 function GameBoard (props) {
   const classes = useStyles();
