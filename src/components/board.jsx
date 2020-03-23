@@ -42,10 +42,18 @@ const useStyles = makeStyles(theme => ({
     width: '65%',
     borderLeft: '1px solid black',
     display: 'flex',
+    flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
     fontSize: '28px',
     fontWeight: '700'
+  },
+  questResultDisplay: {
+    fontSize: '16px',
+    fontWeight: '500',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center'
   },
   playerList: {
     borderLeft: '1px solid black',
@@ -53,7 +61,6 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between'
-
   },
   playerListHeader: {
     borderBottom: '1px solid gray'
@@ -101,8 +108,10 @@ const useStyles = makeStyles(theme => ({
   },
   voteTracker: {
     width: '100%',
+    height: '80%',
     display: 'flex',
-    justifyContent: 'space-around'
+    justifyContent: 'space-around',
+    alignItems: 'center'
   },
   voteTrackerCircle: {
     width: '40px',
@@ -150,49 +159,42 @@ const useStyles = makeStyles(theme => ({
 
 //TODO 'configuring' page whie waiting for missionSize to be set
 
-let testState = {
-    "missionSize": "3,4,4,4,5",
-    "doubleFail": false,
-    "voteTrack": 1,
-    "selectedMission": 1,
-    "missionResult": "SUCCESS",
-    "returnedState": {
-        "missionVoteCount": {
-            "SUCCESS": 0,
-            "FAIL": 0
+let testBoardData = {
+    "missionVoteCount": {
+        "SUCCESS": 3,
+        "FAIL": 1
+    },
+    "playersList": [
+        "elliot",
+        "charlie",
+        "alice",
+        "david",
+        "bob"
+    ],
+    "doubleFail": true,
+    "voteTrack": 3,
+    "missions": [
+        {
+            "missionSize": "3",
+            "missionResult": "SUCCESS"
         },
-        "playersList": [
-            "elliot",
-            "charlie",
-            "alice",
-            "david",
-            "bob"
-        ],
-        "doubleFail": true,
-        "voteTrack": 3,
-        "missions": [
-            {
-                "missionSize": "3",
-                "missionResult": "SUCCESS"
-            },
-            {
-                "missionSize": "4",
-                "missionResult": "NOT_WENT"
-            },
-            {
-                "missionSize": "4",
-                "missionResult": "NOT_WENT"
-            },
-            {
-                "missionSize": "4",
-                "missionResult": "NOT_WENT"
-            },
-            {
-                "missionSize": "5",
-                "missionResult": "NOT_WENT"
-            }
-        ]
-    }
+        {
+            "missionSize": "4",
+            "missionResult": "FAIL"
+        },
+        {
+            "missionSize": "4",
+            "missionResult": "NOT_WENT"
+        },
+        {
+            "missionSize": "4",
+            "missionResult": "NOT_WENT"
+        },
+        {
+            "missionSize": "5",
+            "missionResult": "NOT_WENT"
+        }
+    ]
 }
 
 export default class Board extends React.Component {
@@ -200,14 +202,15 @@ export default class Board extends React.Component {
     super(props);
 
     this.state = {
-      boardData: testState
+      boardData: testBoardData
     };
   }
 
   componentDidMount() {
     axios.get('/getData')
       .then( res => {
-        this.setState({boardData: res.data})
+        console.log('got initial data', res.data.state)
+        this.setState({boardData: res.data.state})
       })
 
     socket = io('/');
@@ -216,8 +219,8 @@ export default class Board extends React.Component {
   }
 
   updateBoardData(data) {
-    this.setState({boardData: data});
     console.log('got it!', data)
+    this.setState({boardData: data});
   }
 
   submitMissionVote(vote) {
@@ -233,14 +236,10 @@ export default class Board extends React.Component {
   render() {
     // mission numbers + doublefail, mission statuses, player order,
     // mission vote buttons, vote tracker, mission vote results,
-    console.log(this.state)
+    console.log('state', this.state)
     return (
       <GameBoard
-        missionSizes={this.state.boardData.missionSize.split(',')}
-        currentVoteTrack={this.state.boardData.voteTrack}
-        selectedMission={this.state.boardData.selectedMission}
-        currentMissionResult={this.state.boardData.missionResult}
-        returnedState={this.state.boardData.returnedState}
+        returnedState={this.state.boardData}
         submitMissionVote={this.submitMissionVote}
       />
     );
@@ -250,20 +249,23 @@ export default class Board extends React.Component {
 
 function GameBoard (props) {
   const classes = useStyles();
-  const { missionSizes = [], currentVoteTrack = '1', selectedMission = '1',
-    currentMissionResult = 'NOT_WENT', returnedState = {}, submitMissionVote } = props;
+  const { returnedState = {}, submitMissionVote } = props;
   const { missionVoteCount = {}, playersList = [], doubleFail = false, voteTrack = 1, missions = [] } = returnedState;
+
+  const mostRecentCompletedMission = 4 - [...missions].reverse().findIndex(mission => mission.missionResult !== 'NOT_WENT');
+  const missionResultReady = missionVoteCount.SUCCESS > 0 || missionVoteCount.FAIL > 0;
 
   return (
     <div className={classes.gameboard}>
       <div className={classes.gameInfo}>
         <div className={classes.questInfo}>
-          {missionSizes.map( (misSize, ind) =>
+          {missions.map( (mission, ind) =>
             <QuestInfoItem
               misNum={ind}
-              misSize={misSize}
+              misSize={mission.missionSize}
               doubleFail={doubleFail}
-              missionData={missions[ind]}
+              missionData={mission}
+              missionVotes={missionResultReady && ind === mostRecentCompletedMission ? missionVoteCount : {}}
             />
           )}
         </div>
@@ -293,13 +295,13 @@ function QuestInfoItem (props) {
   let fontColor = 'black'
 
   const classes = useStyles();
-  const { misNum, misSize, doubleFail, missionData = {} } = props;
-  const { status = 'NOT_WENT' } = missionData;
+  const { misNum, misSize, doubleFail, missionData = {}, missionVotes } = props;
+  const { missionResult = 'NOT_WENT' } = missionData;
 
-  const statusDisplay = status === 'NOT_WENT' ? misSize.toString() : status;
+  const statusDisplay = missionResult === 'NOT_WENT' ? misSize.toString() : missionResult;
 
-  if (status !== 'NOT_WENT') {
-    backgroundColor = status === 'fail' ? '#FF4949' : '#006FC2'
+  if (missionResult !== 'NOT_WENT') {
+    backgroundColor = missionResult === 'FAIL' ? '#FF4949' : '#006FC2'
     fontColor = 'white';
   }
 
@@ -317,6 +319,10 @@ function QuestInfoItem (props) {
         style={{ backgroundColor, color: fontColor }}
       >
         { statusDisplay.toUpperCase() }
+        <div className={classes.questResultDisplay}>
+          <div>{ missionVotes.SUCCESS > 0 && `Success Votes: ${missionVotes.SUCCESS}` }</div>
+          <div>{ missionVotes.FAIL > 0 && `Fail Votes: ${missionVotes.FAIL}` }</div>
+        </div>
       </div>
     </div>
   );
