@@ -225,7 +225,6 @@ export default class Board extends React.Component {
   }
 
   updateBoardData(data) {
-    console.log('got it!', data)
     this.setState({boardData: data});
   }
 
@@ -378,12 +377,12 @@ function MissionVote (props) {
 
   return (
     <div className={classes.voteButtonContainer}>
-      <div className={classes.voteButtonSuccess} onClick={() => props.submitMissionVote('SUCCESS')}>
+      <button className={classes.voteButtonSuccess} onClick={() => props.submitMissionVote('SUCCESS')}>
         Success
-      </div>
-      <div className={classes.voteButtonFail} onClick={() => props.submitMissionVote('FAIL')}>
+      </button>
+      <button className={classes.voteButtonFail} onClick={() => props.submitMissionVote('FAIL')}>
         Fail
-      </div>
+      </button>
     </div>
   )
 }
