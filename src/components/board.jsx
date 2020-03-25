@@ -23,33 +23,21 @@ const useStyles = makeStyles(theme => ({
   },
   gameInfo: {
     display: 'flex',
-    justifyContent: 'space-between',
-    height: '80%',
+    flexDirection: 'column',
+    height: '50%',
   },
   questInfo: {
-    width: '65%',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between'
-  },
-  questInfo_circle: {
-    width: '65%',
+    width: '100%',
+    height: '60%',
     display: 'flex',
     justifyContent: 'space-around'
   },
   questInfoItem: {
-    display: 'flex',
-    height: '20%',
-    borderBottom: '1px solid gray',
-    '&:last-child': {
-      borderBottom: 'none'
-    }
-  },
-  questInfoItem_circle: {
     width: '20%',
     padding: '20px',
     display: 'flex',
     flexDirection: 'column',
+    justifyContent: 'center',
     alignItems: 'center'
   },
   questInfoItemData: {
@@ -59,16 +47,6 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'space-between'
   },
   questInfoItemStatus: {
-    width: '65%',
-    borderLeft: '1px solid black',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontSize: '28px',
-    fontWeight: '700'
-  },
-  questInfoItemStatus_circle: {
     height: '70px',
     width: '70px',
     display: 'flex',
@@ -86,24 +64,19 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'center'
   },
   playerList: {
-    borderLeft: '1px solid black',
-    width: '35%',
+    width: '30%',
+    height: '100%',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between'
   },
   playerListHeader: {
-    borderBottom: '1px solid gray'
   },
   playerListItem: {
     display: 'flex',
-    borderBottom: '1px solid gray',
     height: '100%',
     justifyContent: 'space-around',
     alignItems: 'center',
-    '&:last-child': {
-      borderBottom: 'none'
-    }
   },
   playerListName: {
     width: '100%',
@@ -129,16 +102,18 @@ const useStyles = makeStyles(theme => ({
   },
   bottomSection: {
     width: '100%',
-    height: '20%',
+    height: '50%',
     display: 'flex'
   },
   voteTrackerContainer: {
-    width: '65%',
-    height: '100%'
+    width: '100%',
+    height: '40%',
+    display: 'flex',
+    flexDirection: 'column',
   },
   voteTracker: {
-    width: '100%',
-    height: '80%',
+    height: '100%',
+    padding: '0 20%',
     display: 'flex',
     justifyContent: 'space-around',
     alignItems: 'center'
@@ -159,12 +134,14 @@ const useStyles = makeStyles(theme => ({
     border: 'solid 4px black'
   },
   voteContainer: {
-    width: '35%',
-    height: '100%'
+    width: '70%',
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column'
   },
   voteButtonContainer: {
     width: '100%',
-    height: '80%',
+    height: '100%',
     display: 'flex'
   },
   voteButtonSuccess: {
@@ -195,9 +172,11 @@ let testBoardData = {
     "playersList": [
         "elliot",
         "charlie",
+        "george",
         "alice",
         "david",
-        "bob"
+        "bob",
+        "fred"
     ],
     "doubleFail": true,
     "voteTrack": 1,
@@ -298,7 +277,7 @@ function GameBoard (props) {
   return (
     <div className={classes.gameboard}>
       <div className={classes.gameInfo}>
-        <div className={classes.questInfo_circle}>
+        <div className={classes.questInfo}>
           {missions.map( (mission, ind) =>
             <QuestInfoItemCircles
               misNum={ind}
@@ -309,16 +288,15 @@ function GameBoard (props) {
             />
           )}
         </div>
-
-        <div className={classes.playerList}>
-          <div className={classes.playerListHeader}>King Order: </div>
-          {playersList.map( (player) => <PlayerListItem playerName={player} />)}
-        </div>
-      </div>
-      <div className={classes.bottomSection}>
         <div className={classes.voteTrackerContainer}>
           <div className={classes.voteTrackerHeader}>Mission Proposals: </div>
           <VoteTracker voteTrack={voteTrack} />
+        </div>
+      </div>
+      <div className={classes.bottomSection}>
+        <div className={classes.playerList}>
+          <div className={classes.playerListHeader}>King Order: </div>
+          {playersList.map( (player) => <PlayerListItem playerName={player} />)}
         </div>
         <div className={classes.voteContainer}>
           <div className={classes.voteHeader}>Mission Result Vote: </div>
@@ -389,9 +367,9 @@ function QuestInfoItemCircles (props) {
   //   <div>{ missionVotes.FAIL > 0 && `Fail Votes: ${missionVotes.FAIL}` }</div>
   // </div>
   return (
-    <div className={classes.questInfoItem_circle}>
+    <div className={classes.questInfoItem}>
       <div
-        className={classes.questInfoItemStatus_circle}
+        className={classes.questInfoItemStatus}
         style={{ backgroundColor, color: fontColor }}
       >
         { misSize }
