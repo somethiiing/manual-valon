@@ -24,11 +24,11 @@ const useStyles = makeStyles(theme => ({
   gameInfo: {
     display: 'flex',
     flexDirection: 'column',
-    height: '50%',
+    height: '30%',
   },
   questInfo: {
     width: '100%',
-    height: '60%',
+    height: '100%',
     display: 'flex',
     justifyContent: 'space-around'
   },
@@ -102,8 +102,12 @@ const useStyles = makeStyles(theme => ({
   },
   bottomSection: {
     width: '100%',
-    height: '50%',
+    height: '70%',
     display: 'flex'
+  },
+  bottomRightColumn: {
+    height: '100%',
+    width: '70%'
   },
   voteTrackerContainer: {
     width: '100%',
@@ -113,7 +117,6 @@ const useStyles = makeStyles(theme => ({
   },
   voteTracker: {
     height: '100%',
-    padding: '0 20%',
     display: 'flex',
     justifyContent: 'space-around',
     alignItems: 'center'
@@ -134,10 +137,21 @@ const useStyles = makeStyles(theme => ({
     border: 'solid 4px black'
   },
   voteContainer: {
-    width: '70%',
-    height: '100%',
+    width: '100%',
+    height: '60%',
     display: 'flex',
     flexDirection: 'column'
+  },
+  voteToggleContainer: {
+    width: '100%',
+    height: '60%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  voteToggle: {
+    height: '30%',
+    width: '50%'
   },
   voteButtonContainer: {
     width: '100%',
@@ -149,6 +163,7 @@ const useStyles = makeStyles(theme => ({
     height: '100%',
     backgroundColor: '#006FC2',
     color: 'white',
+    fontSize: '30px',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center'
@@ -158,6 +173,7 @@ const useStyles = makeStyles(theme => ({
     height: '100%',
     backgroundColor: '#FF4949',
     color: 'white',
+    fontSize: '30px',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center'
@@ -166,17 +182,20 @@ const useStyles = makeStyles(theme => ({
 
 let testBoardData = {
     "missionVoteCount": {
-        "SUCCESS": 3,
-        "FAIL": 1
+        "SUCCESS": 0,
+        "FAIL": 0
     },
     "playersList": [
         "elliot",
         "charlie",
+        "isaac",
         "george",
         "alice",
         "david",
+        "harry",
         "bob",
-        "fred"
+        "fred",
+        "john"
     ],
     "doubleFail": true,
     "voteTrack": 1,
@@ -209,8 +228,13 @@ export default class Board extends React.Component {
     super(props);
 
     this.state = {
-      boardData: testBoardData
+      boardData: testBoardData,
+      shouldShowVoteButtons: false
     };
+
+     this.updateBoardData = this.updateBoardData.bind(this);
+     this.toggleShowVoteButtons = this.toggleShowVoteButtons.bind(this);
+     this.submitMissionVote = this.submitMissionVote.bind(this);
   }
 
   componentDidMount() {
@@ -229,15 +253,19 @@ export default class Board extends React.Component {
     this.setState({boardData: data});
   }
 
+  toggleShowVoteButtons(shouldShowVoteButtons) {
+    this.setState({shouldShowVoteButtons: shouldShowVoteButtons});
+  }
+
   submitMissionVote(vote) {
     // vote needs to be either 'SUCCESS' or 'FAIL'
     axios.post('/submitMissionVote', {vote});
+    this.toggleShowVoteButtons(false);
   }
 
   componentWillUnmount() {
     socket.disconnect();
   }
-
 
   render() {
     console.log('state', this.state)
@@ -249,6 +277,8 @@ export default class Board extends React.Component {
           <GameBoard
             returnedState={this.state.boardData}
             submitMissionVote={this.submitMissionVote}
+            toggleShowVoteButtons={this.toggleShowVoteButtons}
+            shouldShowVoteButtons={this.state.shouldShowVoteButtons}
           /> :
           <WaitForAdmin />
         }
@@ -268,7 +298,7 @@ function WaitForAdmin (props) {
 
 function GameBoard (props) {
   const classes = useStyles();
-  const { returnedState = {}, submitMissionVote } = props;
+  const { returnedState = {}, submitMissionVote, toggleShowVoteButtons, shouldShowVoteButtons = false } = props;
   const { missionVoteCount = {}, playersList = [], doubleFail = false, voteTrack = 1, missions = [] } = returnedState;
 
   const nextMission = missions.findIndex(mission => mission.missionResult === 'NOT_WENT');
@@ -279,18 +309,13 @@ function GameBoard (props) {
       <div className={classes.gameInfo}>
         <div className={classes.questInfo}>
           {missions.map( (mission, ind) =>
-            <QuestInfoItemCircles
+            <QuestInfoItem
               misNum={ind}
               misSize={mission.missionSize}
               doubleFail={doubleFail}
               missionData={mission}
-              missionVotes={missionResultReady && ind === nextMission ? missionVoteCount : {}}
             />
           )}
-        </div>
-        <div className={classes.voteTrackerContainer}>
-          <div className={classes.voteTrackerHeader}>Mission Proposals: </div>
-          <VoteTracker voteTrack={voteTrack} />
         </div>
       </div>
       <div className={classes.bottomSection}>
@@ -298,9 +323,18 @@ function GameBoard (props) {
           <div className={classes.playerListHeader}>King Order: </div>
           {playersList.map( (player) => <PlayerListItem playerName={player} />)}
         </div>
-        <div className={classes.voteContainer}>
-          <div className={classes.voteHeader}>Mission Result Vote: </div>
-          <MissionVote submitMissionVote={submitMissionVote}/>
+        <div className={classes.bottomRightColumn}>
+          <div className={classes.voteTrackerContainer}>
+            <div className={classes.voteTrackerHeader}>Mission Proposals: </div>
+            <VoteTracker voteTrack={voteTrack} />
+          </div>
+          <VoteArea
+            submitMissionVote={submitMissionVote}
+            toggleShowVoteButtons={toggleShowVoteButtons}
+            shouldShowVoteButtons={shouldShowVoteButtons}
+            missionVotes={missionVoteCount}
+            missionResultReady={missionResultReady}
+          />
         </div>
       </div>
     </div>
@@ -316,56 +350,13 @@ function QuestInfoItem (props) {
   const { misNum, misSize, doubleFail, missionData = {}, missionVotes } = props;
   const { missionResult = 'NOT_WENT' } = missionData;
 
-  const statusDisplay = missionResult === 'NOT_WENT' ? misSize.toString() : missionResult;
-
   if (missionResult !== 'NOT_WENT') {
     backgroundColor = missionResult === 'FAIL' ? '#FF4949' : '#006FC2'
+    //TODO set backgroundColor back to gray after accidental status change and back to NOT_WENT
     fontColor = 'white';
   }
-
-  return (
-    <div className={classes.questInfoItem}>
-      <div className={classes.questInfoItemData}>
-        <div style={{display: 'flex', flexDirection: 'column'}}>
-          <div style={{fontWeight: 800}}>Quest {misNum + 1}:</div>
-          <div style={{}}>Size: {misSize}</div>
-        </div>
-        {(doubleFail && misNum === 3) && <div style={{color: 'red'}}> TWO FAILS REQUIRED</div>}
-      </div>
-      <div
-        className={classes.questInfoItemStatus}
-        style={{ backgroundColor, color: fontColor }}
-      >
-        { statusDisplay.toUpperCase() }
-        <div className={classes.questResultDisplay}>
-          <div>{ missionVotes.SUCCESS > 0 && `Success Votes: ${missionVotes.SUCCESS}` }</div>
-          <div>{ missionVotes.FAIL > 0 && `Fail Votes: ${missionVotes.FAIL}` }</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-
-function QuestInfoItemCircles (props) {
-  let backgroundColor = 'lightgray';
-  let fontColor = 'black'
-
-  const classes = useStyles();
-  const { misNum, misSize, doubleFail, missionData = {}, missionVotes } = props;
-  const { missionResult = 'NOT_WENT' } = missionData;
-
-  if (missionResult !== 'NOT_WENT') {
-    backgroundColor = missionResult === 'FAIL' ? '#FF4949' : '#006FC2'
-    fontColor = 'white';
-  }
-
-  //TODO put somewhere else
-  //
-  // <div className={classes.questResultDisplay}>
-  //   <div>{ missionVotes.SUCCESS > 0 && `Success Votes: ${missionVotes.SUCCESS}` }</div>
-  //   <div>{ missionVotes.FAIL > 0 && `Fail Votes: ${missionVotes.FAIL}` }</div>
-  // </div>
+  //TODO center/style section titles
+  //TODO center the double fail mission circle
   return (
     <div className={classes.questInfoItem}>
       <div
@@ -379,7 +370,6 @@ function QuestInfoItemCircles (props) {
   );
 }
 
-
 function PlayerListItem (props) {
   const classes = useStyles();
 
@@ -389,7 +379,6 @@ function PlayerListItem (props) {
     </div>
   )
 };
-
 
 function VoteTracker (props) {
   const classes = useStyles();
@@ -405,17 +394,52 @@ function VoteTracker (props) {
   )
 }
 
-function MissionVote (props) {
+function VoteArea (props) {
+  const classes = useStyles();
+  const { submitMissionVote, toggleShowVoteButtons, shouldShowVoteButtons, missionVotes, missionResultReady } = props;
+
+  if (missionResultReady) {
+    return (
+      <div className={classes.questResultDisplay}>
+        <div>{ missionVotes.SUCCESS > 0 && `Success Votes: ${missionVotes.SUCCESS}` }</div>
+        <div>{ missionVotes.FAIL > 0 && `Fail Votes: ${missionVotes.FAIL}` }</div>
+      </div>
+    );
+  } else if (shouldShowVoteButtons) {
+    return (
+      <MissionVote submitMissionVote={submitMissionVote} />
+    );
+  } else {
+    return (
+      <VoteToggle toggleShowVoteButtons={toggleShowVoteButtons} />
+    );
+  }
+}
+
+function VoteToggle (props) {
   const classes = useStyles();
 
   return (
-    <div className={classes.voteButtonContainer}>
-      <button className={classes.voteButtonSuccess} onClick={() => props.submitMissionVote('SUCCESS')}>
-        Success
-      </button>
-      <button className={classes.voteButtonFail} onClick={() => props.submitMissionVote('FAIL')}>
-        Fail
-      </button>
+    <div className={classes.voteToggleContainer}>
+      <button className={classes.voteToggle} onClick={() => props.toggleShowVoteButtons(true)}>Vote Now</button>
+    </div>
+  );
+}
+
+function MissionVote (props) {
+  const classes = useStyles();
+  //TODO add 'cancel' toggle button to hide vote buttons - reuse VoteToggle with 'text' prop
+  return (
+    <div className={classes.voteContainer}>
+      <div className={classes.voteHeader}>Mission Result Vote: </div>
+      <div className={classes.voteButtonContainer}>
+        <button className={classes.voteButtonSuccess} onClick={() => props.submitMissionVote('SUCCESS')}>
+          Success
+        </button>
+        <button className={classes.voteButtonFail} onClick={() => props.submitMissionVote('FAIL')}>
+          Fail
+        </button>
+      </div>
     </div>
   )
 }
