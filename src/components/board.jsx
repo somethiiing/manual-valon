@@ -47,8 +47,8 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'space-between'
   },
   questInfoItemStatus: {
-    height: '70px',
-    width: '70px',
+    height: '90px',
+    width: '90px',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
@@ -57,11 +57,14 @@ const useStyles = makeStyles(theme => ({
     borderRadius: '50%'
   },
   questResultDisplay: {
-    fontSize: '16px',
-    fontWeight: '500',
+    width: '100%',
+    height: '60%',
+    fontSize: '30px',
+    fontWeight: '600',
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center'
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   playerList: {
     width: '30%',
@@ -71,6 +74,9 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'space-between'
   },
   playerListHeader: {
+    textAlign: 'center',
+    fontWeight: 'bold',
+    fontSize: '24px'
   },
   playerListItem: {
     display: 'flex',
@@ -115,6 +121,11 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     flexDirection: 'column',
   },
+  voteTrackerHeader: {
+    textAlign: 'center',
+    fontWeight: 'bold',
+    fontSize: '24px'
+  },
   voteTracker: {
     height: '100%',
     display: 'flex',
@@ -122,8 +133,10 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'center'
   },
   voteTrackerCircle: {
-    width: '40px',
-    height: '40px',
+    width: '60px',
+    height: '60px',
+    fontSize: '20px',
+    fontWeight: '600',
     backgroundColor: 'lightgray',
     borderRadius: '50%',
     display: 'flex',
@@ -142,6 +155,11 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     flexDirection: 'column'
   },
+  voteHeader: {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'space-between'
+  },
   voteToggleContainer: {
     width: '100%',
     height: '60%',
@@ -151,7 +169,8 @@ const useStyles = makeStyles(theme => ({
   },
   voteToggle: {
     height: '30%',
-    width: '50%'
+    width: '50%',
+    fontSize: 'large'
   },
   voteButtonContainer: {
     width: '100%',
@@ -182,8 +201,8 @@ const useStyles = makeStyles(theme => ({
 
 let testBoardData = {
     "missionVoteCount": {
-        "SUCCESS": 0,
-        "FAIL": 0
+        "SUCCESS": 2,
+        "FAIL": 1
     },
     "playersList": [
         "elliot",
@@ -301,7 +320,6 @@ function GameBoard (props) {
   const { returnedState = {}, submitMissionVote, toggleShowVoteButtons, shouldShowVoteButtons = false } = props;
   const { missionVoteCount = {}, playersList = [], doubleFail = false, voteTrack = 1, missions = [] } = returnedState;
 
-  const nextMission = missions.findIndex(mission => mission.missionResult === 'NOT_WENT');
   const missionResultReady = missionVoteCount.SUCCESS > 0 || missionVoteCount.FAIL > 0;
 
   return (
@@ -320,12 +338,12 @@ function GameBoard (props) {
       </div>
       <div className={classes.bottomSection}>
         <div className={classes.playerList}>
-          <div className={classes.playerListHeader}>King Order: </div>
+          <div className={classes.playerListHeader}>King Order</div>
           {playersList.map( (player) => <PlayerListItem playerName={player} />)}
         </div>
         <div className={classes.bottomRightColumn}>
           <div className={classes.voteTrackerContainer}>
-            <div className={classes.voteTrackerHeader}>Mission Proposals: </div>
+            <div className={classes.voteTrackerHeader}>Mission Proposals</div>
             <VoteTracker voteTrack={voteTrack} />
           </div>
           <VoteArea
@@ -343,20 +361,22 @@ function GameBoard (props) {
 
 
 function QuestInfoItem (props) {
+  const { misNum, misSize, doubleFail, missionData = {} } = props;
+  const { missionResult = 'NOT_WENT' } = missionData;
+
+  const classes = useStyles();
+
   let backgroundColor = 'lightgray';
   let fontColor = 'black'
 
-  const classes = useStyles();
-  const { misNum, misSize, doubleFail, missionData = {}, missionVotes } = props;
-  const { missionResult = 'NOT_WENT' } = missionData;
-
-  if (missionResult !== 'NOT_WENT') {
-    backgroundColor = missionResult === 'FAIL' ? '#FF4949' : '#006FC2'
-    //TODO set backgroundColor back to gray after accidental status change and back to NOT_WENT
+  if (missionResult === 'FAIL') {
+    backgroundColor = '#FF4949';
+    fontColor = 'white';
+  } else if (missionResult === 'SUCCESS') {
+    backgroundColor = '#006FC2';
     fontColor = 'white';
   }
-  //TODO center/style section titles
-  //TODO center the double fail mission circle
+
   return (
     <div className={classes.questInfoItem}>
       <div
@@ -365,7 +385,7 @@ function QuestInfoItem (props) {
       >
         { misSize }
       </div>
-      {(doubleFail && misNum === 3) && <div style={{color: 'red', fontSize: '14px', textAlign: 'center'}}>TWO FAILS REQUIRED</div>}
+      {(doubleFail && misNum === 3) && <div style={{color: 'red', fontSize: '14px', textAlign: 'center', position: 'absolute', top: '25px'}}>TWO FAILS REQUIRED</div>}
     </div>
   );
 }
@@ -407,31 +427,30 @@ function VoteArea (props) {
     );
   } else if (shouldShowVoteButtons) {
     return (
-      <MissionVote submitMissionVote={submitMissionVote} />
+      <MissionVote
+        submitMissionVote={submitMissionVote}
+        toggleShowVoteButtons={toggleShowVoteButtons}
+      />
     );
   } else {
     return (
-      <VoteToggle toggleShowVoteButtons={toggleShowVoteButtons} />
+      <div className={classes.voteToggleContainer}>
+        <button className={classes.voteToggle} onClick={() => props.toggleShowVoteButtons(true)}>Vote Now</button>
+      </div>
     );
   }
 }
 
-function VoteToggle (props) {
-  const classes = useStyles();
-
-  return (
-    <div className={classes.voteToggleContainer}>
-      <button className={classes.voteToggle} onClick={() => props.toggleShowVoteButtons(true)}>Vote Now</button>
-    </div>
-  );
-}
-
 function MissionVote (props) {
   const classes = useStyles();
-  //TODO add 'cancel' toggle button to hide vote buttons - reuse VoteToggle with 'text' prop
   return (
     <div className={classes.voteContainer}>
-      <div className={classes.voteHeader}>Mission Result Vote: </div>
+      <div className={classes.voteHeader}>
+        Mission Result Vote:
+        <div className={classes.voteCancelContainer}>
+          <button className={classes.voteCancelButton} onClick={() => props.toggleShowVoteButtons(false)}>Cancel</button>
+        </div>
+      </div>
       <div className={classes.voteButtonContainer}>
         <button className={classes.voteButtonSuccess} onClick={() => props.submitMissionVote('SUCCESS')}>
           Success
