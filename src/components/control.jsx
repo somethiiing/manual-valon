@@ -160,7 +160,7 @@ export default class ControlPanel extends React.Component {
             <div>
             <label>Mission Outcome:</label>
               <select onChange={ e => {this.onInputChange(e, 'missionResult')}} >
-                {['SUCCESS', 'FAIL', 'NOT GONE'].map( el => {
+                {['SUCCESS', 'FAIL', 'NOT_WENT'].map( el => {
                   return <option value={el}>{el}</option>
                 })}
               </select>
