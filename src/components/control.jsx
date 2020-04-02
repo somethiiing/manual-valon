@@ -9,6 +9,7 @@ export default class ControlPanel extends React.Component {
       players: '',
       missionSize: '',
       doubleFail: false,
+      reversalsAllowed: false,
       voteTrack: 1,
       selectedMission: 1,
       missionResult: 'SUCCESS',
@@ -48,6 +49,10 @@ export default class ControlPanel extends React.Component {
       data.changeType = 'SET_MISSION_SIZE';
       data.missionSize = this.state.missionSize.split(',');
       data.doubleFail = this.state.doubleFail;
+    }
+    if(form === 'setSpecialOptions') {
+      data.changeType = 'SET_SPECIAL_OPTIONS';
+      data.reversalsAllowed = this.state.reversalsAllowed;
     }
     if(form === 'setVoteTrack') {
       data.changeType = 'SET_VOTE_TRACK';
@@ -117,6 +122,21 @@ export default class ControlPanel extends React.Component {
             </div>
 
             <button>SET MISSION SIZES</button>
+          </form>
+
+          <form style={{display: 'flex', flexDirection: 'column'}}
+            onSubmit={e => this.submitBoardChange(e, 'setSpecialOptions')}
+          >
+            <h4>Set Special Options:</h4>
+            <div>
+              <label>Play with Reversals:</label>
+              <select onChange={ e => {this.onInputChange(e, 'reversalsAllowed', 'bool')}} >
+                <option value={''}>false</option>
+                <option value={true}>true</option>
+              </select>
+            </div>
+
+            <button>SET SPECIAL OPTIONS</button>
           </form>
 
           <form style={{display: 'flex', flexDirection: 'column'}}

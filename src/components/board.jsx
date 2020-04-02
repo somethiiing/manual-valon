@@ -202,7 +202,8 @@ const useStyles = makeStyles(theme => ({
 let testBoardData = {
     "missionVoteCount": {
         "SUCCESS": 2,
-        "FAIL": 1
+        "FAIL": 1,
+        "REVERSE": 1
     },
     "playersList": [
         "elliot",
@@ -217,6 +218,7 @@ let testBoardData = {
         "john"
     ],
     "doubleFail": true,
+    "reversalsAllowed": true,
     "voteTrack": 1,
     "missions": [
         {
@@ -318,9 +320,9 @@ function WaitForAdmin (props) {
 function GameBoard (props) {
   const classes = useStyles();
   const { returnedState = {}, submitMissionVote, toggleShowVoteButtons, shouldShowVoteButtons = false } = props;
-  const { missionVoteCount = {}, playersList = [], doubleFail = false, voteTrack = 1, missions = [] } = returnedState;
+  const { missionVoteCount = {}, playersList = [], doubleFail = false, reversalsAllowed = false, voteTrack = 1, missions = [] } = returnedState;
 
-  const missionResultReady = missionVoteCount.SUCCESS > 0 || missionVoteCount.FAIL > 0;
+  const missionResultReady = missionVoteCount.SUCCESS > 0 || missionVoteCount.FAIL > 0 || missionVoteCount.REVERSE > 0;
 
   return (
     <div className={classes.gameboard}>
@@ -350,6 +352,7 @@ function GameBoard (props) {
             submitMissionVote={submitMissionVote}
             toggleShowVoteButtons={toggleShowVoteButtons}
             shouldShowVoteButtons={shouldShowVoteButtons}
+            reversalsAllowed={reversalsAllowed}
             missionVotes={missionVoteCount}
             missionResultReady={missionResultReady}
           />
@@ -416,13 +419,14 @@ function VoteTracker (props) {
 
 function VoteArea (props) {
   const classes = useStyles();
-  const { submitMissionVote, toggleShowVoteButtons, shouldShowVoteButtons, missionVotes, missionResultReady } = props;
+  const { submitMissionVote, toggleShowVoteButtons, shouldShowVoteButtons, reversalsAllowed, missionVotes, missionResultReady } = props;
 
   if (missionResultReady) {
     return (
       <div className={classes.questResultDisplay}>
         <div>{ missionVotes.SUCCESS > 0 && `Success Votes: ${missionVotes.SUCCESS}` }</div>
         <div>{ missionVotes.FAIL > 0 && `Fail Votes: ${missionVotes.FAIL}` }</div>
+        <div>{ missionVotes.REVERSE > 0 && `Reversals: ${missionVotes.REVERSE}` }</div>
       </div>
     );
   } else if (shouldShowVoteButtons) {
@@ -430,6 +434,7 @@ function VoteArea (props) {
       <MissionVote
         submitMissionVote={submitMissionVote}
         toggleShowVoteButtons={toggleShowVoteButtons}
+        reversalsAllowed={reversalsAllowed}
       />
     );
   } else {
@@ -455,6 +460,11 @@ function MissionVote (props) {
         <button className={classes.voteButtonSuccess} onClick={() => props.submitMissionVote('SUCCESS')}>
           Success
         </button>
+        { props.reversalsAllowed &&
+          <button className={classes.voteButtonReverse} onClick={() => props.submitMissionVote('REVERSE')}>
+            Reverse
+          </button>
+        }
         <button className={classes.voteButtonFail} onClick={() => props.submitMissionVote('FAIL')}>
           Fail
         </button>

@@ -16,17 +16,20 @@ app
 let state = {
   missionVoteCount: {
     SUCCESS: 0,
-    FAIL: 0
+    FAIL: 0,
+    REVERSE: 0
   },
   playersList: [],
   doubleFail: false,
+  reversalsAllowed: false,
   voteTrack: 1,
   missions: []
 }
 
 let missionVoteCount = {
   SUCCESS: 0,
-  FAIL: 0
+  FAIL: 0,
+  REVERSE: 0
 }
 
 app.get('/viewState', (req, res) => {
@@ -53,18 +56,20 @@ app.post('/revealMissionVotes', (req, res) => {
 app.post('/submitMissionVoteReset', (req, res) => {
   state.missionVoteCount = {
     SUCCESS: 0,
-    FAIL: 0
+    FAIL: 0,
+    REVERSE: 0
   }
   missionVoteCount = {
     SUCCESS: 0,
-    FAIL: 0
+    FAIL: 0,
+    REVERSE: 0
   }
   io.emit('updateBoard', state);
   res.send({status: 'STATE_RESET', state, missionVoteCount});
 });
 
 app.post('/submitBoardChange', (req, res) => {
-  const { changeType, missionSize, doubleFail, voteTrack,
+  const { changeType, missionSize, doubleFail, reversalsAllowed, voteTrack,
     selectedMission, missionResult, playersList
   } = req.body
   if (changeType === 'SET_PLAYERS_LIST') {
@@ -73,6 +78,9 @@ app.post('/submitBoardChange', (req, res) => {
   if (changeType === 'SET_MISSION_SIZE') {
     state.missions = setMissionSizes(missionSize);
     state.doubleFail = doubleFail;
+  }
+  if (changeType === 'SET_SPECIAL_OPTIONS') {
+    state.reversalsAllowed = reversalsAllowed;
   }
   if (changeType === 'SET_VOTE_TRACK') {
     state.voteTrack = voteTrack;
