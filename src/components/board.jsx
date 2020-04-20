@@ -155,6 +155,13 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     flexDirection: 'column'
   },
+  voteConfirmation: {
+    width: '100%',
+    height: '60%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
   voteHeader: {
     width: '100%',
     display: 'flex',
@@ -244,7 +251,7 @@ let testBoardData = {
     "doubleFail": true,
     "reversalsAllowed": true,
     "voteTrack": 1,
-    "voteStatus": "BLANK", //BLANK, VOTING_READY, VOTING, VOTE_REGISTERED, DISPLAY_RESULT
+    "voteStatus": "VOTE_REGISTERED", //BLANK, VOTING_READY, VOTING, VOTE_REGISTERED, DISPLAY_RESULT
     "missions": [
         {
             "missionSize": "3",
@@ -528,7 +535,7 @@ function MissionVote (props) {
 function VoteConfirmation (props) {
   const classes = useStyles();
   return (
-    <div>
+    <div className={classes.voteConfirmation}>
       {`You voted ${props.submittedVote}`}
     </div>
   );

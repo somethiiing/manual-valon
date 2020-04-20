@@ -36,18 +36,20 @@ class Login extends React.Component {
   render() {
     return (
       <div style={{height: '100%'}}>
-        <form onSubmit={this.onLogin} style={{height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+        <form onSubmit={this.onLogin} style={{height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}}>
           <input
             type='text'
             label='username'
             value={this.state.user}
             onChange={(e) => this.onInputChange(e, 'user')}
+            style={{margin: '5px'}}
           ></input>
           <input
             type='password'
             label='password'
             value={this.state.password}
             onChange={(e) => this.onInputChange(e, 'password')}
+            style={{margin: '5px'}}
           ></input>
           <button onClick={this.onLogin}>login</button>
         </form>
