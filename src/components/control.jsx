@@ -20,6 +20,7 @@ export default class ControlPanel extends React.Component {
 
     this.onInputChange = this.onInputChange.bind(this);
     this.submitBoardChange = this.submitBoardChange.bind(this);
+    this.incrementMissionProposal = this.incrementMissionProposal.bind(this);
     this.submitMissionVote = this.submitMissionVote.bind(this);
     this.revealMissionVotes = this.revealMissionVotes.bind(this);
     this.submitMissionVoteReset = this.submitMissionVoteReset.bind(this);
@@ -68,6 +69,31 @@ export default class ControlPanel extends React.Component {
     .then( res => this.setState({returnedState: res.data}));
   }
 
+  incrementMissionProposal() {
+    let data = {};
+    const newVoteTrack = this.state.voteTrack + 1 > 5 ? 5 : this.state.voteTrack + 1;
+    data.changeType = 'NEXT_PROPOSAL';
+    data.voteTrack = newVoteTrack;
+    this.setState({voteTrack: newVoteTrack});
+    axios.post('/submitBoardChange', data)
+    .then( res => this.setState({returnedState: res.data}));
+  }
+
+  missionFinished(result) {
+    const nextMission = this.state.returnedState.missions.findIndex(m => m.missionResult === 'NOT_WENT') + 1;
+    let data = {};
+    data.changeType = 'MISSION_FINISHED';
+    data.voteTrack = 1;
+    data.selectedMission = nextMission;
+    data.missionResult = result;
+    this.setState({
+      voteTrack: 1,
+      missionResult: result
+    });
+    axios.post('/submitBoardChange', data)
+    .then( res => this.setState({returnedState: res.data}));
+  }
+
   submitMissionVote(vote) {
     axios.post('/submitMissionVote', {vote})
     .then(res => this.setState({missionVote: res.data}));
@@ -85,12 +111,15 @@ export default class ControlPanel extends React.Component {
   toggleDisplay() {
     this.setState({showDisplay: !this.state.showDisplay});
   }
-
+//TODO votes received counter
   render() {
     return (
       <div style={{display:'flex', height: '100%'}}>
         <div style={{padding: '25px', width: '50%'}}>
-
+          <button onClick={this.incrementMissionProposal}>NEXT PROPOSAL</button>
+          <button onClick={this.revealMissionVotes}>REVEAL MISSION VOTE</button>
+          <button onClick={() => this.missionFinished('SUCCESS')}>MISSION SUCCEEDED</button>
+          <button onClick={() => this.missionFinished('FAIL')}>MISSION FAILED</button>
           <form
             style={{display: 'flex', flexDirection: 'column'}}
             onSubmit={e => this.submitBoardChange(e, 'setPlayersList')}

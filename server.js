@@ -82,10 +82,10 @@ app.post('/submitBoardChange', (req, res) => {
   if (changeType === 'SET_SPECIAL_OPTIONS') {
     state.reversalsAllowed = reversalsAllowed;
   }
-  if (changeType === 'SET_VOTE_TRACK') {
+  if (changeType === 'SET_VOTE_TRACK' || changeType === 'NEXT_PROPOSAL' || changeType === 'MISSION_FINISHED') {
     state.voteTrack = voteTrack;
   }
-  if (changeType === 'SET_MISSION_RESULT') {
+  if (changeType === 'SET_MISSION_RESULT' || changeType === 'MISSION_FINISHED') {
     state.missions[selectedMission - 1].setMissionResult(missionResult);
   }
 

@@ -3,7 +3,7 @@ import React from 'react';
 import Control from './control';
 
 let username = 'admin';
-let password = 'thisisthepassword';
+let password = 'thisisit';
 
 class Login extends React.Component {
   constructor(props) {
