@@ -1,5 +1,8 @@
 import React from 'react';
 import axios from 'axios';
+import io from 'socket.io-client';
+
+let socket;
 
 export default class ControlPanel extends React.Component {
   constructor(props) {
@@ -12,6 +15,7 @@ export default class ControlPanel extends React.Component {
       reversalsAllowed: false,
       voteTrack: 1,
       voteStatus: 'BLANK',
+      voteCount: 0,
       selectedMission: 1,
       missionResult: 'SUCCESS',
       showDisplay: true,
@@ -26,6 +30,11 @@ export default class ControlPanel extends React.Component {
     this.revealMissionVotes = this.revealMissionVotes.bind(this);
     this.submitMissionVoteReset = this.submitMissionVoteReset.bind(this);
     this.toggleDisplay = this.toggleDisplay.bind(this);
+  }
+
+  componentDidMount() {
+    socket = io('/');
+    socket.on('updateState', returnedState => this.setState({returnedState: returnedState}));
   }
 
   onInputChange(e, field, numOrBool) {
@@ -121,13 +130,15 @@ export default class ControlPanel extends React.Component {
   toggleDisplay() {
     this.setState({showDisplay: !this.state.showDisplay});
   }
-//TODO votes received counter
+
   render() {
+    const voteCount = this.state.returnedState ? this.state.returnedState.voteCount: this.state.voteCount;
     return (
       <div style={{display:'flex', height: '100%'}}>
         <div style={{padding: '25px', width: '50%'}}>
           <button onClick={this.incrementMissionProposal}>NEXT PROPOSAL</button>
           <button onClick={this.openMissionVoting}>OPEN VOTING</button>
+          <p>{`Votes Received: ${this.state.returnedState.voteCount}`}</p>
           <button onClick={this.revealMissionVotes}>REVEAL MISSION VOTE</button>
           <button onClick={() => this.missionFinished('SUCCESS')}>MISSION SUCCEEDED</button>
           <button onClick={() => this.missionFinished('FAIL')}>MISSION FAILED</button>
@@ -150,7 +161,7 @@ export default class ControlPanel extends React.Component {
           >
             <h4>Set Mission Sizes:</h4>
             <input
-              placeholder='3,4,4,4,5'
+              placeholder='3,4,4,4,5'//TODO use a game size map
               value={this.state.missionSize}
               onChange={ (e) => this.onInputChange(e, 'missionSize') }
             ></input>

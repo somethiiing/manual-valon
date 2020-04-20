@@ -24,6 +24,7 @@ let state = {
   reversalsAllowed: false,
   voteTrack: 1,
   voteStatus: 'BLANK',
+  voteCount: 0,
   missions: []
 }
 
@@ -45,6 +46,8 @@ app.get('/getData', (req, res) => {
 app.post('/submitMissionVote', (req, res) => {
   let { vote } = req.body;
   missionVoteCount[vote] = missionVoteCount[vote] + 1;
+  state.voteCount = state.voteCount + 1;
+  io.emit('updateState', state);
   res.send({status: 'VOTE_REGISTERED', missionVoteCount});
 });
 
@@ -62,6 +65,7 @@ app.post('/submitMissionVoteReset', (req, res) => {
     REVERSE: 0
   }
   state.voteStatus = 'BLANK';
+  state.voteCount = 0;
   missionVoteCount = {
     SUCCESS: 0,
     FAIL: 0,
@@ -110,7 +114,7 @@ app.post('/submitBoardChange', (req, res) => {
   if (changeType === 'SET_MISSION_RESULT' || changeType === 'MISSION_FINISHED') {
     state.missions[selectedMission - 1].setMissionResult(missionResult);
   }
-  //TODO add manual voteStatus change input
+
   io.emit('updateBoard', state);
   res.send(state);
 })
