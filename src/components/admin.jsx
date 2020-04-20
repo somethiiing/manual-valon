@@ -35,8 +35,8 @@ class Login extends React.Component {
 
   render() {
     return (
-      <div style={{height:'100%'}}>
-        <form onSubmit={this.onLogin}>
+      <div style={{height: '100%'}}>
+        <form onSubmit={this.onLogin} style={{height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
           <input
             type='text'
             label='username'

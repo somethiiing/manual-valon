@@ -11,6 +11,7 @@ export default class ControlPanel extends React.Component {
       doubleFail: false,
       reversalsAllowed: false,
       voteTrack: 1,
+      voteStatus: 'BLANK',
       selectedMission: 1,
       missionResult: 'SUCCESS',
       showDisplay: true,
@@ -59,6 +60,10 @@ export default class ControlPanel extends React.Component {
       data.changeType = 'SET_VOTE_TRACK';
       data.voteTrack = this.state.voteTrack;
     }
+    if(form === 'setVoteStatus') {
+      data.changeType = 'SET_VOTE_STATUS';
+      data.voteStatus = this.state.voteStatus;
+    }
     if(form === 'setMissionResult') {
       data.changeType = 'SET_MISSION_RESULT';
       data.selectedMission = this.state.selectedMission;
@@ -89,9 +94,14 @@ export default class ControlPanel extends React.Component {
     this.setState({
       voteTrack: 1,
       missionResult: result
-    });
+    });//TODO sync up state with dropdowns or reference returnedState instead to increment
     axios.post('/submitBoardChange', data)
     .then( res => this.setState({returnedState: res.data}));
+  }
+
+  openMissionVoting() {
+    axios.post('/openMissionVoting')
+    .then( res => this.setState({returnedState: res.data.state, missionVote: res.data.missionVoteCount}))
   }
 
   submitMissionVote(vote) {
@@ -117,9 +127,11 @@ export default class ControlPanel extends React.Component {
       <div style={{display:'flex', height: '100%'}}>
         <div style={{padding: '25px', width: '50%'}}>
           <button onClick={this.incrementMissionProposal}>NEXT PROPOSAL</button>
+          <button onClick={this.openMissionVoting}>OPEN VOTING</button>
           <button onClick={this.revealMissionVotes}>REVEAL MISSION VOTE</button>
           <button onClick={() => this.missionFinished('SUCCESS')}>MISSION SUCCEEDED</button>
           <button onClick={() => this.missionFinished('FAIL')}>MISSION FAILED</button>
+          <button onClick={this.submitMissionVoteReset}>RESET MISSION VOTE</button>
           <form
             style={{display: 'flex', flexDirection: 'column'}}
             onSubmit={e => this.submitBoardChange(e, 'setPlayersList')}
@@ -182,6 +194,22 @@ export default class ControlPanel extends React.Component {
             </div>
 
             <button>SET VOTE TRACK</button>
+          </form>
+
+          <form style={{display: 'flex', flexDirection: 'column'}}
+            onSubmit={e => this.submitBoardChange(e, 'setVoteStatus')}
+          >
+            <h4>Set Vote Status:</h4>
+            <div>
+              <label>Vote Status:</label>
+              <select onChange={ e => {this.onInputChange(e, 'voteStatus')}} >
+                {['BLANK', 'VOTING_READY', 'DISPLAY_RESULT'].map( el => {
+                  return <option value={el}>{el}</option>
+                })}
+              </select>
+            </div>
+
+            <button>SET VOTE STATUS</button>
           </form>
 
           <form style={{display: 'flex', flexDirection: 'column'}}

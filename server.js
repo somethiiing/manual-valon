@@ -23,6 +23,7 @@ let state = {
   doubleFail: false,
   reversalsAllowed: false,
   voteTrack: 1,
+  voteStatus: 'BLANK',
   missions: []
 }
 
@@ -49,6 +50,7 @@ app.post('/submitMissionVote', (req, res) => {
 
 app.post('/revealMissionVotes', (req, res) => {
   state.missionVoteCount = missionVoteCount;
+  state.voteStatus = 'DISPLAY_RESULT';
   io.emit('updateBoard', state);
   res.send({missionVoteCount});
 })
@@ -59,6 +61,23 @@ app.post('/submitMissionVoteReset', (req, res) => {
     FAIL: 0,
     REVERSE: 0
   }
+  state.voteStatus = 'BLANK';
+  missionVoteCount = {
+    SUCCESS: 0,
+    FAIL: 0,
+    REVERSE: 0
+  }
+  io.emit('updateBoard', state);
+  res.send({status: 'STATE_RESET', state, missionVoteCount});
+});
+
+app.post('/openMissionVoting', (req, res) => {
+  state.missionVoteCount = {
+    SUCCESS: 0,
+    FAIL: 0,
+    REVERSE: 0
+  }
+  state.voteStatus = 'VOTING_READY';
   missionVoteCount = {
     SUCCESS: 0,
     FAIL: 0,
@@ -70,7 +89,7 @@ app.post('/submitMissionVoteReset', (req, res) => {
 
 app.post('/submitBoardChange', (req, res) => {
   const { changeType, missionSize, doubleFail, reversalsAllowed, voteTrack,
-    selectedMission, missionResult, playersList
+    voteStatus, selectedMission, missionResult, playersList
   } = req.body
   if (changeType === 'SET_PLAYERS_LIST') {
     state.playersList = shuffle(playersList);
@@ -85,10 +104,13 @@ app.post('/submitBoardChange', (req, res) => {
   if (changeType === 'SET_VOTE_TRACK' || changeType === 'NEXT_PROPOSAL' || changeType === 'MISSION_FINISHED') {
     state.voteTrack = voteTrack;
   }
+  if (changeType === 'SET_VOTE_STATUS') {
+    state.voteStatus = voteStatus;
+  }
   if (changeType === 'SET_MISSION_RESULT' || changeType === 'MISSION_FINISHED') {
     state.missions[selectedMission - 1].setMissionResult(missionResult);
   }
-
+  //TODO add manual voteStatus change input
   io.emit('updateBoard', state);
   res.send(state);
 })

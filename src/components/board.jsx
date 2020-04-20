@@ -244,6 +244,7 @@ let testBoardData = {
     "doubleFail": true,
     "reversalsAllowed": true,
     "voteTrack": 1,
+    "voteStatus": "BLANK", //BLANK, VOTING_READY, VOTING, VOTE_REGISTERED, DISPLAY_RESULT
     "missions": [
         {
             "missionSize": "3",
@@ -274,11 +275,11 @@ export default class Board extends React.Component {
 
     this.state = {
       boardData: testBoardData,
-      shouldShowVoteButtons: false
+      submittedVote: 'NONE',
     };
 
      this.updateBoardData = this.updateBoardData.bind(this);
-     this.toggleShowVoteButtons = this.toggleShowVoteButtons.bind(this);
+     this.updateVoteStatus = this.updateVoteStatus.bind(this);
      this.submitMissionVote = this.submitMissionVote.bind(this);
   }
 
@@ -298,14 +299,18 @@ export default class Board extends React.Component {
     this.setState({boardData: data});
   }
 
-  toggleShowVoteButtons(shouldShowVoteButtons) {
-    this.setState({shouldShowVoteButtons: shouldShowVoteButtons});
+  updateVoteStatus(voteStatus) {
+    //BLANK, VOTING_READY, VOTING, VOTE_REGISTERED, DISPLAY_RESULT
+    let data = this.state.boardData;
+    data.voteStatus = voteStatus;
+    this.updateBoardData(data);
   }
 
   submitMissionVote(vote) {
     // vote needs to be either 'SUCCESS' or 'FAIL'
     axios.post('/submitMissionVote', {vote});
-    this.toggleShowVoteButtons(false);
+    this.updateVoteStatus('VOTE_REGISTERED');
+    this.setState({submittedVote: vote});
   }
 
   componentWillUnmount() {
@@ -322,8 +327,9 @@ export default class Board extends React.Component {
           <GameBoard
             returnedState={this.state.boardData}
             submitMissionVote={this.submitMissionVote}
-            toggleShowVoteButtons={this.toggleShowVoteButtons}
-            shouldShowVoteButtons={this.state.shouldShowVoteButtons}
+            submittedVote={this.state.submittedVote}
+            updateVoteStatus={this.updateVoteStatus}
+            voteStatus={this.state.boardData.voteStatus}
           /> :
           <WaitForAdmin />
         }
@@ -343,10 +349,9 @@ function WaitForAdmin (props) {
 
 function GameBoard (props) {
   const classes = useStyles();
-  const { returnedState = {}, submitMissionVote, toggleShowVoteButtons, shouldShowVoteButtons = false } = props;
+  const { returnedState = {}, submitMissionVote, submittedVote, updateVoteStatus, voteStatus = 'BLANK' } = props;
   const { missionVoteCount = {}, playersList = [], doubleFail = false, reversalsAllowed = false, voteTrack = 1, missions = [] } = returnedState;
 
-  const missionResultReady = missionVoteCount.SUCCESS > 0 || missionVoteCount.FAIL > 0 || missionVoteCount.REVERSE > 0;
 //TODO make questInfo display responsive
   return (
     <div className={classes.gameboard}>
@@ -374,11 +379,11 @@ function GameBoard (props) {
           </div>
           <VoteArea
             submitMissionVote={submitMissionVote}
-            toggleShowVoteButtons={toggleShowVoteButtons}
-            shouldShowVoteButtons={shouldShowVoteButtons}
+            submittedVote={submittedVote}
+            updateVoteStatus={updateVoteStatus}
+            voteStatus={voteStatus}
             reversalsAllowed={reversalsAllowed}
             missionVotes={missionVoteCount}
-            missionResultReady={missionResultReady}
           />
         </div>
       </div>
@@ -443,31 +448,50 @@ function VoteTracker (props) {
 
 function VoteArea (props) {
   const classes = useStyles();
-  const { submitMissionVote, toggleShowVoteButtons, shouldShowVoteButtons, reversalsAllowed, missionVotes, missionResultReady } = props;
+  const { submitMissionVote, submittedVote, updateVoteStatus, voteStatus, reversalsAllowed, missionVotes } = props;
 
-  if (missionResultReady) {
-    return (
-      <div className={classes.questResultDisplay}>
-        <div>{ missionVotes.SUCCESS > 0 && `Success Votes: ${missionVotes.SUCCESS}` }</div>
-        <div>{ missionVotes.FAIL > 0 && `Fail Votes: ${missionVotes.FAIL}` }</div>
-        <div>{ missionVotes.REVERSE > 0 && `Reversals: ${missionVotes.REVERSE}` }</div>
-      </div>
-    );
-  } else if (shouldShowVoteButtons) {
-    return (
-      <MissionVote
-        submitMissionVote={submitMissionVote}
-        toggleShowVoteButtons={toggleShowVoteButtons}
-        reversalsAllowed={reversalsAllowed}
-      />
-    );
-  } else {
-    return (
-      <div className={classes.voteToggleContainer}>
-        <button className={classes.voteToggle} onClick={() => props.toggleShowVoteButtons(true)}>Vote Now</button>
-      </div>
-    );
+  switch(voteStatus) {
+    case 'VOTING_READY':
+      return(
+        <VoteNow
+          updateVoteStatus={updateVoteStatus}
+        />
+      );
+    case 'VOTING':
+      return (
+        <MissionVote
+          submitMissionVote={submitMissionVote}
+          updateVoteStatus={updateVoteStatus}
+          reversalsAllowed={reversalsAllowed}
+        />
+      );
+    case 'VOTE_REGISTERED':
+      return(
+        <VoteConfirmation
+          submittedVote={submittedVote}
+        />
+      );
+    case 'DISPLAY_RESULT':
+      return(
+        <ResultDisplay
+          missionVotes={missionVotes}
+        />
+      );
+    case 'BLANK':
+    default:
+      return(<div></div>);
   }
+}
+
+function VoteNow (props) {
+  const classes = useStyles();
+  return (
+    <div className={classes.voteToggleContainer}>
+      <button className={classes.voteToggle} onClick={() => props.updateVoteStatus('VOTING')}>
+        Vote Now
+      </button>
+    </div>
+  );
 }
 
 function MissionVote (props) {
@@ -477,7 +501,7 @@ function MissionVote (props) {
       <div className={classes.voteHeader}>
         Mission Result Vote:
         <div className={classes.voteCancelContainer}>
-          <button className={classes.voteCancelButton} onClick={() => props.toggleShowVoteButtons(false)}>Cancel</button>
+          <button className={classes.voteCancelButton} onClick={() => props.updateVoteStatus('VOTING_READY')}>Cancel</button>
         </div>
       </div>
       <div className={classes.voteButtonContainer}>
@@ -489,14 +513,35 @@ function MissionVote (props) {
             Fail
           </button>
         </div>
-        <div className={classes.voteButtonContainerBottom}>
-          { props.reversalsAllowed &&
+        { props.reversalsAllowed &&
+          <div className={classes.voteButtonContainerBottom}>
             <button className={classes.voteButtonReverse} onClick={() => props.submitMissionVote('REVERSE')}>
               Reverse
             </button>
-          }
-        </div>
+          </div>
+        }
       </div>
     </div>
   )
+}
+
+function VoteConfirmation (props) {
+  const classes = useStyles();
+  return (
+    <div>
+      {`You voted ${props.submittedVote}`}
+    </div>
+  );
+}
+
+function ResultDisplay (props) {
+  const classes = useStyles();
+  const {missionVotes} = props;
+  return (
+    <div className={classes.questResultDisplay}>
+      <div>{ missionVotes.SUCCESS > 0 && `Success Votes: ${missionVotes.SUCCESS}` }</div>
+      <div>{ missionVotes.FAIL > 0 && `Fail Votes: ${missionVotes.FAIL}` }</div>
+      <div>{ missionVotes.REVERSE > 0 && `Reversals: ${missionVotes.REVERSE}` }</div>
+    </div>
+  );
 }
