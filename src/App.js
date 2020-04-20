@@ -21,9 +21,9 @@ class App extends React.Component {
 
   render() {
     return (
-      <div style={{height: '100%'}}>
-        {this.state.showButtons && <button onClick={e => this.changePage('BOARD')}>PLAYER</button>}
-        {this.state.showButtons && <button onClick={e => this.changePage('ADMIN')}>ADMIN</button>}
+      <div className={'App'}>
+        {this.state.showButtons && <button className={'boardButton'} onClick={e => this.changePage('BOARD')}>PLAYER</button>}
+        {this.state.showButtons && <button className={'boardButton'} onClick={e => this.changePage('ADMIN')}>ADMIN</button>}
         {this.state.page === 'BOARD' && <Board />}
         {this.state.page === 'ADMIN' && <Admin />}
       </div>

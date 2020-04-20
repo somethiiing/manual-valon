@@ -175,7 +175,23 @@ const useStyles = makeStyles(theme => ({
   voteButtonContainer: {
     width: '100%',
     height: '100%',
-    display: 'flex'
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  voteButtonContainerFull: {
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+  },
+  voteButtonContainerTop: {
+    width: '100%',
+    height: '70%',
+    display: 'flex',
+  },
+  voteButtonContainerBottom: {
+    width: '100%',
+    height: '30%',
+    display: 'flex',
   },
   voteButtonSuccess: {
     width: '50%',
@@ -196,14 +212,22 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center'
+  },
+  voteButtonReverse: {
+    width: '100%',
+    height: '100%',
+    fontSize: '30px',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center'
   }
 }));
 
 let testBoardData = {
     "missionVoteCount": {
-        "SUCCESS": 2,
-        "FAIL": 1,
-        "REVERSE": 1
+        "SUCCESS": 0,
+        "FAIL": 0,
+        "REVERSE": 0
     },
     "playersList": [
         "elliot",
@@ -323,7 +347,7 @@ function GameBoard (props) {
   const { missionVoteCount = {}, playersList = [], doubleFail = false, reversalsAllowed = false, voteTrack = 1, missions = [] } = returnedState;
 
   const missionResultReady = missionVoteCount.SUCCESS > 0 || missionVoteCount.FAIL > 0 || missionVoteCount.REVERSE > 0;
-
+//TODO make questInfo display responsive
   return (
     <div className={classes.gameboard}>
       <div className={classes.gameInfo}>
@@ -457,17 +481,21 @@ function MissionVote (props) {
         </div>
       </div>
       <div className={classes.voteButtonContainer}>
-        <button className={classes.voteButtonSuccess} onClick={() => props.submitMissionVote('SUCCESS')}>
-          Success
-        </button>
-        { props.reversalsAllowed &&
-          <button className={classes.voteButtonReverse} onClick={() => props.submitMissionVote('REVERSE')}>
-            Reverse
+        <div className={props.reversalsAllowed ? classes.voteButtonContainerTop : classes.voteButtonContainerFull}>
+          <button className={classes.voteButtonSuccess} onClick={() => props.submitMissionVote('SUCCESS')}>
+            Success
           </button>
-        }
-        <button className={classes.voteButtonFail} onClick={() => props.submitMissionVote('FAIL')}>
-          Fail
-        </button>
+          <button className={classes.voteButtonFail} onClick={() => props.submitMissionVote('FAIL')}>
+            Fail
+          </button>
+        </div>
+        <div className={classes.voteButtonContainerBottom}>
+          { props.reversalsAllowed &&
+            <button className={classes.voteButtonReverse} onClick={() => props.submitMissionVote('REVERSE')}>
+              Reverse
+            </button>
+          }
+        </div>
       </div>
     </div>
   )
