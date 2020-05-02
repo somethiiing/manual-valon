@@ -49,12 +49,53 @@ export default class ControlPanel extends React.Component {
     this.setState(temp);
   }
 
+  getGameBoard(numPlayers) {
+    const gameBoards = {
+      5: {
+        missionSizes: [2,3,2,3,3],
+        doubleFail: false
+      },
+      6: {
+        missionSizes: [2,3,4,3,4],
+        doubleFail: false
+      },
+      7: {
+        missionSizes: [2,3,3,4,4],
+        doubleFail: true
+      },
+      8: {
+        missionSizes: [3,4,4,5,5],
+        doubleFail: true
+      },
+      9: {
+        missionSizes: [3,4,4,5,5],
+        doubleFail: true
+      },
+      10: {
+        missionSizes: [3,4,4,5,5],
+        doubleFail: true
+      },
+      11: {
+        missionSizes: [3,4,4,5,5],
+        doubleFail: true
+      },
+      12: {
+        missionSizes: [3,4,4,5,5],
+        doubleFail: true
+      }
+    }
+    return gameBoards[numPlayers];
+  }
+
   submitBoardChange(e, form) {
     e.preventDefault();
     let data = {};
     if(form === 'setPlayersList') {
       data.changeType = 'SET_PLAYERS_LIST';
       data.playersList = this.state.players.split(',');
+      const gameBoard = this.getGameBoard(data.playersList.length);
+      data.missionSize = gameBoard.missionSizes;
+      data.doubleFail = gameBoard.doubleFail;
     }
     if(form === 'setMissionSize') {
       data.changeType = 'SET_MISSION_SIZE';
@@ -161,7 +202,7 @@ export default class ControlPanel extends React.Component {
           >
             <h4>Set Mission Sizes:</h4>
             <input
-              placeholder='3,4,4,4,5'//TODO use a game size map
+              placeholder='2,3,4,3,4'
               value={this.state.missionSize}
               onChange={ (e) => this.onInputChange(e, 'missionSize') }
             ></input>

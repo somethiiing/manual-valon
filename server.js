@@ -97,6 +97,8 @@ app.post('/submitBoardChange', (req, res) => {
   } = req.body
   if (changeType === 'SET_PLAYERS_LIST') {
     state.playersList = shuffle(playersList);
+    state.missions = setMissionSizes(missionSize);
+    state.doubleFail = doubleFail;
   }
   if (changeType === 'SET_MISSION_SIZE') {
     state.missions = setMissionSizes(missionSize);
