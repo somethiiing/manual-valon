@@ -1,7 +1,8 @@
 import React from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 let socket;
 
@@ -19,12 +20,17 @@ const useStyles = makeStyles(theme => ({
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    maxWidth: '1000px',
+    margin: 'auto'
   },
   gameInfo: {
     display: 'flex',
     flexDirection: 'column',
     height: '30%',
+    [theme.breakpoints.down('xs')]: {
+      height: '20%'
+    }
   },
   questInfo: {
     width: '100%',
@@ -38,15 +44,12 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    [theme.breakpoints.down('xs')]: {
+      padding: '5px'
+    }
   },
-  questInfoItemData: {
-    width: '35%',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between'
-  },
-  questInfoItemStatus: {
+  questInfoItemCircle: {
     height: '90px',
     width: '90px',
     display: 'flex',
@@ -54,7 +57,23 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'center',
     fontSize: '28px',
     fontWeight: '700',
-    borderRadius: '50%'
+    borderRadius: '50%',
+    [theme.breakpoints.down('xs')]: {
+      height: '50px',
+      width: '50px',
+      fontSize: '20px',
+      fontWeight: '500'
+    }
+  },
+  doubleFail: {
+    color: 'red',
+    fontSize: '14px',
+    textAlign: 'center',
+    position: 'absolute',
+    top: '25px',
+    [theme.breakpoints.down('xs')]: {
+      top: '10px'
+    }
   },
   questResultDisplay: {
     width: '100%',
@@ -67,11 +86,12 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'center'
   },
   playerList: {
-    width: '30%',
+    width: '25%',
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    margin: 'auto'
   },
   playerListHeader: {
     textAlign: 'center',
@@ -109,17 +129,23 @@ const useStyles = makeStyles(theme => ({
   bottomSection: {
     width: '100%',
     height: '70%',
-    display: 'flex'
+    display: 'flex',
+    [theme.breakpoints.down('xs')]: {
+      height: '80%'
+    }
   },
   bottomRightColumn: {
     height: '100%',
-    width: '70%'
+    width: '75%'
   },
   voteTrackerContainer: {
     width: '100%',
     height: '40%',
     display: 'flex',
     flexDirection: 'column',
+    [theme.breakpoints.down('xs')]: {
+      height: '30%'
+    }
   },
   voteTrackerHeader: {
     textAlign: 'center',
@@ -144,16 +170,30 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'center',
     '&:last-child': {
       backgroundColor: '#FF4949'
+    },
+    [theme.breakpoints.down('xs')]: {
+      height: '40px',
+      width: '40px',
+      fontSize: '16px'
     }
   },
   selectedCircle: {
-    border: 'solid 4px black'
+    border: 'solid 4px black',
+    [theme.breakpoints.down('xs')]: {
+      border: 'solid 2px black',
+    }
   },
   voteContainer: {
     width: '100%',
     height: '60%',
     display: 'flex',
-    flexDirection: 'column'
+    flexDirection: 'column',
+    alignItems: 'center',
+    [theme.breakpoints.up('md')]: {
+      height: '50%',
+      width: '80%',
+      margin: 'auto'
+    }
   },
   voteConfirmation: {
     width: '100%',
@@ -165,7 +205,9 @@ const useStyles = makeStyles(theme => ({
   voteHeader: {
     width: '100%',
     display: 'flex',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    fontWeight: 'bold',
+    fontSize: '20px'
   },
   voteToggleContainer: {
     width: '100%',
@@ -183,7 +225,10 @@ const useStyles = makeStyles(theme => ({
     width: '100%',
     height: '100%',
     display: 'flex',
-    flexDirection: 'column'
+    flexDirection: 'column',
+    [theme.breakpoints.up('md')]: {
+      flexDirection: 'row'
+    }
   },
   voteButtonContainerFull: {
     width: '100%',
@@ -194,11 +239,20 @@ const useStyles = makeStyles(theme => ({
     width: '100%',
     height: '70%',
     display: 'flex',
+    [theme.breakpoints.up('md')]: {
+      //left
+      height: '100%',
+      width: '66%',
+    }
   },
   voteButtonContainerBottom: {
     width: '100%',
     height: '30%',
     display: 'flex',
+    [theme.breakpoints.up('md')]: {
+      height: '100%',
+      width: '34%',
+    }
   },
   voteButtonSuccess: {
     width: '50%',
@@ -208,7 +262,10 @@ const useStyles = makeStyles(theme => ({
     fontSize: '30px',
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '20px'
+    }
   },
   voteButtonFail: {
     width: '50%',
@@ -218,7 +275,10 @@ const useStyles = makeStyles(theme => ({
     fontSize: '30px',
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '20px'
+    }
   },
   voteButtonReverse: {
     width: '100%',
@@ -226,7 +286,11 @@ const useStyles = makeStyles(theme => ({
     fontSize: '30px',
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '20px'
+    }
+    //todo make vertical on wide screens
   }
 }));
 
@@ -241,17 +305,17 @@ let testBoardData = {
         "charlie",
         "isaac",
         "george",
-        "alice",
-        "david",
-        "harry",
-        "bob",
-        "fred",
-        "john"
+        "alexandraaaaaaaa",
+        // "david",
+        // "harry",
+        // "bob",
+        // "fred",
+        // "john"
     ],
     "doubleFail": true,
     "reversalsAllowed": true,
     "voteTrack": 1,
-    "voteStatus": "VOTE_REGISTERED", //BLANK, VOTING_READY, VOTING, VOTE_REGISTERED, DISPLAY_RESULT
+    "voteStatus": "VOTING", //BLANK, VOTING_READY, VOTING, VOTE_REGISTERED, DISPLAY_RESULT
     "missions": [
         {
             "missionSize": "3",
@@ -404,6 +468,8 @@ function QuestInfoItem (props) {
   const { missionResult = 'NOT_WENT' } = missionData;
 
   const classes = useStyles();
+  const theme = useTheme();
+  const smallScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
   let backgroundColor = 'lightgray';
   let fontColor = 'black'
@@ -419,12 +485,15 @@ function QuestInfoItem (props) {
   return (
     <div className={classes.questInfoItem}>
       <div
-        className={classes.questInfoItemStatus}
+        className={classes.questInfoItemCircle}
         style={{ backgroundColor, color: fontColor }}
       >
         { misSize }
       </div>
-      {(doubleFail && misNum === 3) && <div style={{color: 'red', fontSize: '14px', textAlign: 'center', position: 'absolute', top: '25px'}}>TWO FAILS REQUIRED</div>}
+      {(doubleFail && misNum === 3) &&
+        <div className={classes.doubleFail}>
+          {smallScreen ? 'x2' : 'TWO FAILS REQUIRED'}
+        </div>}
     </div>
   );
 }
